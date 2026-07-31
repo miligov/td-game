@@ -171,6 +171,162 @@ h2{font-size:clamp(19px,6vw,28px);font-weight:900;color:#e8eef7;letter-spacing:1
   .tw b{font-size:10.5px}
   #towerRow{justify-content:center}
 }
+
+
+
+/* ===== СОВРЕМЕННЫЙ СЛОЙ ===== */
+/* Единая подача для всех игр: объём, стекло, мягкие тени.
+   Ниже только переопределения — исходные стили остаются запасным
+   вариантом на случай, если какое-то правило не совпадёт. */
+:root{
+  --ac:#5aa0ff; --ac2:#1d5296; --ac3:#ffd24a;
+  --ink:#f2f6ff; --ink2:#a8b6d8; --ink3:#6f80a8;
+  --line:rgba(150,180,255,.14); --line2:rgba(150,180,255,.28);
+  --sh1:0 2px 8px rgba(0,0,0,.4);
+  --sh2:0 10px 30px rgba(0,0,0,.5);
+}
+body{
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  font-feature-settings:'tnum' 1;
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',
+    Roboto,'Helvetica Neue',Arial,sans-serif;
+}
+
+/* ---------- кнопки: объём + пружина ---------- */
+.btn,.btn2,.act{
+  border:0;cursor:pointer;font-family:inherit;font-weight:800;
+  letter-spacing:.2px;
+  transition:transform .1s cubic-bezier(.34,1.56,.64,1),box-shadow .1s,filter .15s;
+}
+.btn{
+  padding:15px 32px;border-radius:16px;color:#3a1e00;
+  background:linear-gradient(180deg,#b4d4ff,var(--ac) 46%,var(--ac2));
+  box-shadow:0 5px 0 #2b4c7a,0 9px 22px rgba(90,160,255,.34),
+             inset 0 1px 0 rgba(255,255,255,.55);
+}
+.btn:active{
+  transform:translateY(5px);
+  box-shadow:0 0 0 #2b4c7a,0 3px 10px rgba(90,160,255,.34),
+             inset 0 1px 0 rgba(255,255,255,.45);
+}
+.btn.sm,.btn2{
+  font-size:13px;padding:11px 18px;border-radius:13px;color:#dde6fb;
+  background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.07));
+  box-shadow:0 4px 0 rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.18);
+  border:1px solid var(--line);
+}
+.btn.sm:active,.btn2:active{
+  transform:translateY(4px);
+  box-shadow:0 0 0 rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
+}
+.btn.ghost{
+  color:#dde6fb;
+  background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.06));
+  box-shadow:0 4px 0 rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.16);
+  border:1px solid var(--line);
+}
+.btn.ghost:active{transform:translateY(4px);box-shadow:0 0 0 rgba(0,0,0,.4)}
+.btn.g,.btn2.g{
+  color:#052a12;
+  background:linear-gradient(180deg,#a9f5c9,#3ddc84 48%,#22b56c);
+  box-shadow:0 5px 0 #14804a,0 9px 22px rgba(61,220,132,.32),
+             inset 0 1px 0 rgba(255,255,255,.55);
+}
+.btn.g:active,.btn2.g:active{transform:translateY(5px);box-shadow:0 0 0 #14804a}
+.btn.b{
+  color:#04203f;
+  background:linear-gradient(180deg,#bfe0ff,#4d8dff 48%,#2a5fd8);
+  box-shadow:0 5px 0 #1b459f,0 9px 22px rgba(77,141,255,.35),
+             inset 0 1px 0 rgba(255,255,255,.55);
+}
+.btn.b:active{transform:translateY(5px);box-shadow:0 0 0 #1b459f}
+.btn.ad{
+  color:#052033;
+  background:linear-gradient(180deg,#a8e3ff,#43a5f0 48%,#1f78d0);
+  box-shadow:0 4px 0 #14568f,0 8px 20px rgba(60,160,240,.35),
+             inset 0 1px 0 rgba(255,255,255,.6);
+}
+.btn.ad:active{transform:translateY(4px);box-shadow:0 0 0 #14568f}
+.btn.ad.no{
+  background:linear-gradient(180deg,#9aa6bd,#6b7688);
+  box-shadow:0 4px 0 #444c5c;color:#e8eefb;opacity:.65;
+}
+.btn.no,.btn2.no{opacity:.42;filter:saturate(.5)}
+.act{
+  border-radius:14px;
+  background:linear-gradient(165deg,rgba(255,255,255,.14),rgba(255,255,255,.05));
+  border:1px solid var(--line);
+  box-shadow:var(--sh1),inset 0 1px 0 rgba(255,255,255,.14);
+}
+.act:active{transform:scale(.97)}
+
+/* ---------- заголовки ---------- */
+h1{
+  font-weight:900;letter-spacing:-.5px;line-height:.98;
+  background:linear-gradient(175deg,#fffdf4 8%,#b4d4ff 34%,var(--ac) 66%,var(--ac2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  /* Плотная тёмная подложка обязательна: на светлом фоне (например,
+     коричневом в «Арбузике») градиентный текст иначе сливается. */
+  filter:drop-shadow(0 2px 0 rgba(0,0,0,.55))
+         drop-shadow(0 5px 14px rgba(0,0,0,.6))
+         drop-shadow(0 10px 30px rgba(90,160,255,.34));
+}
+h2{font-weight:800;letter-spacing:-.3px;color:var(--ink)}
+/* Вложенный в заголовок текст (подзаголовки, счётчики) не должен
+   наследовать градиентную заливку — иначе он становится нечитаемым. */
+h1 .sub,h1 span.sub,h1 small,h1 em,h1 i{
+  -webkit-text-fill-color:var(--ink2);
+  background:none;color:var(--ink2);
+  filter:none;font-weight:600;
+}
+
+/* ---------- панели и карточки ---------- */
+.card,.card2,.panel,.box,.item,.row,.stb,.slot,.mp,.tk,.cr,.up,.spec,.chest{
+  border-radius:16px;
+}
+.card,.card2,.stb,.spec{
+  background:linear-gradient(165deg,rgba(255,255,255,.085),rgba(255,255,255,.032));
+  border:1px solid var(--line);
+  box-shadow:var(--sh1),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.item{
+  background:linear-gradient(165deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  border:1px solid var(--line);
+  box-shadow:var(--sh1),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.pill,.chip{
+  border-radius:13px;
+  background:linear-gradient(165deg,rgba(255,255,255,.13),rgba(255,255,255,.05));
+  border:1px solid var(--line2);
+  box-shadow:var(--sh1),inset 0 1px 0 rgba(255,255,255,.14);
+  backdrop-filter:blur(10px) saturate(1.25);
+  -webkit-backdrop-filter:blur(10px) saturate(1.25);
+}
+
+/* ---------- всплывашки ---------- */
+#toast{
+  border-radius:14px;padding:11px 18px;
+  background:linear-gradient(180deg,rgba(22,28,52,.98),rgba(12,16,32,.98));
+  border:1px solid var(--line2);
+  box-shadow:var(--sh2),inset 0 1px 0 rgba(255,255,255,.12);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+
+/* ---------- экраны ---------- */
+.screen,.scr{
+  backdrop-filter:blur(18px) saturate(1.15);
+  -webkit-backdrop-filter:blur(18px) saturate(1.15);
+}
+.screen.show,.scr.on{animation:mdIn .26s cubic-bezier(.22,1,.36,1)}
+@keyframes mdIn{from{opacity:0;transform:scale(.975)}to{opacity:1;transform:scale(1)}}
+
+/* ---------- полосы прогресса ---------- */
+.bar,.lvl i,#trBar,#lvlBar{
+  border-radius:6px;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.55);
+}
+
 </style>
 </head>
 <body>
@@ -261,7 +417,7 @@ h2{font-size:clamp(19px,6vw,28px);font-weight:900;color:#e8eef7;letter-spacing:1
     <div class="sub" id="statLine" style="font-size:11.5px"></div>
     <div class="rw">
       <button class="btn sm" id="stShare">📣 Похвастаться</button>
-      <button class="btn sm" id="stLb">🏆 Лидеры</button>
+      <button class="btn sm" id="stLb">💚 Наше сообщество</button>
       <button class="btn sm" id="stClose">Назад</button>
     </div>
   </div>
@@ -451,10 +607,29 @@ function haptic(s){
   else if(navigator.vibrate)navigator.vibrate(s==='heavy'?24:s==='medium'?12:6);
 }
 function showLB(){
-  if(VK.ready)bridge.send('VKWebAppShowLeaderBoardBox',{user_result:P.bestWave|0})
-    .catch(function(){toast('Рейтинг недоступен');});
-  else toast('🏆 Рейтинг только в ВК');
+  /* Общий рейтинг игроков ВК больше не отдаёт: старый метод
+     отключён, и модерация браковала приложения за его вызов.
+     Вместо окна лидеров предлагаем показать результат друзьям. */
+  share();
 }
+
+/* ---------- сообщество разработчика ----------
+   Все игры ведут в одну группу: новости, свежие игры, обратная связь. */
+var GROUP_ID=240587633, GROUP_URL='https://vk.com/club240587633';
+function joinGroup(){
+  if(VK.ready){
+    bridge.send('VKWebAppJoinGroup',{group_id:GROUP_ID}).then(function(){
+      toast('💚 Спасибо за подписку!');
+    }).catch(function(){
+      /* уже подписан либо закрыл окно — просто открываем страницу */
+      bridge.send('VKWebAppOpenApp',{app_id:0}).catch(function(){});
+      try{window.open(GROUP_URL,'_blank');}catch(e){}
+    });
+  }else{
+    try{window.open(GROUP_URL,'_blank');}catch(e){toast(GROUP_URL);}
+  }
+}
+
 function share(txt){
   var t=txt||('Отбил '+P.bestWave+' волн в «ОБОРОНЕ» 🏰 Повторишь?');
   if(VK.ready){
@@ -2080,7 +2255,7 @@ bindTap('howClose',function(){sfx('click');showScr('intro');});
 bindTap('statBtn',function(){sfx('click');openStats();});
 bindTap('stClose',function(){sfx('click');paintMeta();showScr('intro');});
 bindTap('stShare',function(){sfx('click');share();});
-bindTap('stLb',function(){sfx('click');showLB();});
+bindTap('stLb',function(){sfx('click');joinGroup();});
 bindTap('contBtn',function(){sfx('click');resumeGame();});
 bindTap('quitBtn',function(){sfx('click');endRun(false);});
 bindTap('sndBtn',function(){toggleSnd();});

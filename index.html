@@ -174,6 +174,7 @@ h2{font-size:clamp(19px,6vw,28px);font-weight:900;color:#e8eef7;letter-spacing:1
 
 
 
+
 /* ===== СОВРЕМЕННЫЙ СЛОЙ ===== */
 /* Единая подача для всех игр: объём, стекло, мягкие тени.
    Ниже только переопределения — исходные стили остаются запасным
@@ -325,6 +326,49 @@ h1 .sub,h1 span.sub,h1 small,h1 em,h1 i{
 .bar,.lvl i,#trBar,#lvlBar{
   border-radius:6px;
   box-shadow:inset 0 2px 5px rgba(0,0,0,.55);
+}
+
+/* ============================================================
+   ДЕТАЛИ 2026: мягкий свет, живые поверхности, честные состояния
+   ============================================================ */
+/* Подсветка сверху экрана — сцена перестаёт быть плоской заливкой */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(80% 42% at 50% -8%,rgba(90,160,255,.34),transparent 68%),
+    radial-gradient(60% 34% at 12% 104%,rgba(120,90,255,.14),transparent 70%);
+}
+/* Крупные заголовки — плотнее и современнее по трекингу */
+h1{letter-spacing:-1px}
+h2{letter-spacing:-.4px}
+/* Блик по кнопке: тонкая светлая кромка сверху */
+.btn::after,.btn2::after{
+  content:'';position:absolute;left:8%;right:8%;top:1px;height:38%;
+  border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.34),transparent);
+}
+.btn{position:relative;overflow:hidden}
+.btn2{position:relative;overflow:hidden}
+/* Заблокированные элементы читаются как «пока нельзя», а не как поломка */
+button:disabled,.btn.no,.btn2.no,.buy.no{
+  filter:saturate(.45);opacity:.6;cursor:default;
+}
+/* Мягкое появление списков и карточек */
+.item,.card,.card2,.stb,.slot,.row{
+  transition:transform .14s cubic-bezier(.34,1.56,.64,1),
+             box-shadow .18s,border-color .18s,background .18s;
+}
+.item:active,.slot:active,.row:active{transform:scale(.985)}
+/* Доступная область тапа: мелкие кнопки всё равно удобно нажимать */
+button,.btn,.act,.btn2{min-height:38px}
+/* Плавная прокрутка списков на телефоне */
+.scrBody,.pool,#shopList,#list{scroll-behavior:smooth}
+/* Аккуратный фокус с клавиатуры (ПК и доступность) */
+button:focus-visible,.btn:focus-visible{
+  outline:2px solid var(--ac);outline-offset:3px;
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
 
 </style>
@@ -630,11 +674,30 @@ function joinGroup(){
   }
 }
 
+
+/* ---------- поделиться результатом ----------
+   Старый метод постинга на стену ВК отключил,
+   и модерация браковала приложения за его вызов. Теперь:
+   1) пробуем историю — её ВК сам рекомендует как основной шеринг;
+   2) если не вышло, показываем штатное окно «Поделиться»;
+   3) вне ВК — системный шеринг или буфер обмена.            */
+function shareStory(text,link){
+  if(!VK.ready)return false;
+  try{
+    bridge.send('VKWebAppShowStoryBox',{
+      background_type:'none',
+      attachment:{text:'open',type:'url',url:link||location.href}
+    }).catch(function(){
+      bridge.send('VKWebAppShare',{link:link||location.href}).catch(nop);
+    });
+    return true;
+  }catch(e){return false;}
+}
+
 function share(txt){
   var t=txt||('Отбил '+P.bestWave+' волн в «ОБОРОНЕ» 🏰 Повторишь?');
   if(VK.ready){
-    bridge.send('VKWebAppShowWallPostBox',{message:t}).catch(function(){
-      bridge.send('VKWebAppShare',{link:location.href}).catch(nop);});
+    shareStory(t,location.href);
   }else if(navigator.share){navigator.share({text:t,url:location.href}).catch(nop);}
   else{try{navigator.clipboard.writeText(t+' '+location.href);toast('📋 Скопировано');}
        catch(e){toast(t);}}

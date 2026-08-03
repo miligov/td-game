@@ -368,6 +368,70 @@ button:focus-visible,.btn:focus-visible{
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
 
+
+/* ===== МУЛЬТЯШНЫЙ СЛОЙ ===== */
+/* Казуальная подача: пухлые формы, толстые кромки, пружина.
+   Идёт последним, поэтому переопределяет предыдущие слои. */
+
+/* ---------- кнопки: пухлые и с «хвостиком» тени ---------- */
+.btn,.btn2,.act,.buy{
+  border-radius:20px !important;
+  font-weight:900 !important;
+  letter-spacing:.3px;
+  text-shadow:0 1px 0 rgba(255,255,255,.35);
+  transition:transform .12s cubic-bezier(.34,1.8,.5,1),
+             box-shadow .12s,filter .18s !important;
+}
+.btn{
+  border:2px solid rgba(255,255,255,.30) !important;
+  padding:16px 34px;
+}
+.btn:active,.btn2:active,.act:active,.buy:active{
+  transform:translateY(4px) scale(.97) !important;
+}
+/* мягкое «дыхание» главной кнопки — глаз сразу цепляется */
+@keyframes cartoonBreathe{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-2px) scale(1.022)}
+}
+#playBtn,#btnPlay,#startBtn,#btnStart,.btn.primary{
+  animation:cartoonBreathe 2.4s ease-in-out infinite;
+}
+#playBtn:active,#btnPlay:active,#startBtn:active,#btnStart:active{
+  animation:none;
+}
+
+/* ---------- панели: пухлые карточки ---------- */
+.card,.card2,.panel,.box,.item,.stb,.slot,.spec,.chest,.cr,.tk,.up{
+  border-radius:22px !important;
+  border-width:2px !important;
+}
+.pill,.chip{
+  border-radius:999px !important;
+  border-width:2px !important;
+  font-weight:900 !important;
+}
+
+/* ---------- заголовки: плотные и «наклейкой» ---------- */
+h1{
+  letter-spacing:-1.2px !important;
+  filter:drop-shadow(0 3px 0 rgba(0,0,0,.5))
+         drop-shadow(0 6px 0 rgba(0,0,0,.22))
+         drop-shadow(0 12px 26px rgba(0,0,0,.5)) !important;
+}
+h2{letter-spacing:-.5px !important;font-weight:900 !important}
+
+/* ---------- всплывашка ---------- */
+#toast{border-radius:18px !important;border-width:2px !important;font-weight:800}
+
+/* ---------- иконки в списках крупнее ---------- */
+.item .ic,.ic{font-size:32px}
+
+@media (prefers-reduced-motion:reduce){
+  #playBtn,#btnPlay,#startBtn,#btnStart,.btn.primary{animation:none}
+}
+
+
 </style>
 </head>
 <body>

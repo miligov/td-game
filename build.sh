@@ -6,7 +6,7 @@ cat src/00-head.html src/10-core.js src/20-data.js src/30-engine.js \
 node -e '
 const fs=require("fs");
 const h=fs.readFileSync("index.html","utf8");
-const i=h.indexOf("<script>\n(function");
+const i=h.lastIndexOf("<script>");
 const j=h.lastIndexOf("</script>");
 fs.writeFileSync("/tmp/tchk.js",h.slice(i+8,j));
 '

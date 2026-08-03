@@ -172,9 +172,6 @@ h2{font-size:clamp(19px,6vw,28px);font-weight:900;color:#e8eef7;letter-spacing:1
   #towerRow{justify-content:center}
 }
 
-
-
-
 /* ===== СОВРЕМЕННЫЙ СЛОЙ ===== */
 /* Единая подача для всех игр: объём, стекло, мягкие тени.
    Ниже только переопределения — исходные стили остаются запасным
@@ -471,6 +468,171 @@ button:focus-visible,.btn:focus-visible{
 
 <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 <script>
+/* ============================================================
+   ЗАЩИТА ОТ ПРОПАВШИХ ЭМОДЗИ В CANVAS
+   На части устройств (прежде всего iOS) системный эмодзи-шрифт
+   не подхватывается внутри canvas: вместо иконок появляются пустые
+   квадраты. Именно из-за этого модерация ВК возвращала «Арбузик».
+   Здесь один раз проверяем, рисуется ли эмодзи на самом деле, и
+   если нет — подменяем его читаемым цветным значком, нарисованным
+   кодом. На нормальных устройствах ничего не меняется.
+   ============================================================ */
+(function(){
+  if(typeof document==='undefined')return;
+  var CTX=window.CanvasRenderingContext2D;
+  if(!CTX||!CTX.prototype||CTX.prototype.__emojiGuard)return;
+  CTX.prototype.__emojiGuard=true;
+
+  var STACK='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",'+
+            '"Twemoji Mozilla","EmojiOne Color",serif';
+  var supported=null;
+
+  function emojiWorks(){
+    if(supported!==null)return supported;
+    try{
+      var c=document.createElement('canvas');c.width=c.height=40;
+      var g=c.getContext('2d');
+      g.textAlign='center';g.textBaseline='middle';
+      g.font='30px '+STACK;
+      /* ширина заведомо отсутствующего символа = ширина «тофу» */
+      var tofu=g.measureText('\uFFFF').width;
+      var real=g.measureText('\uD83C\uDF4E').width;   /* 🍎 */
+      g.clearRect(0,0,40,40);
+      g.fillStyle='#000';
+      g.fillText('\uD83C\uDF4E',20,20);
+      var d=g.getImageData(0,0,40,40).data,painted=0,colored=0;
+      for(var i=0;i<d.length;i+=4){
+        if(d[i+3]>16){
+          painted++;
+          if(Math.abs(d[i]-d[i+1])>12||Math.abs(d[i+1]-d[i+2])>12)colored++;
+        }
+      }
+      /* иконка есть, если что-то нарисовалось, это не «тофу»
+         и в глифе присутствует цвет */
+      supported = painted>25 && colored>8 && Math.abs(real-tofu)>0.5;
+    }catch(e){ supported=true; }   /* сомневаешься — не ломай рабочее */
+    return supported;
+  }
+
+  /* палитра для подмены: эмодзи → цвет и форма */
+  var MAP={
+    '\u2764':['#ff4d6d','heart'],'\uD83D\uDC9A':['#3ddc84','heart'],
+    '\uD83D\uDC99':['#4d8dff','heart'],'\uD83D\uDC94':['#c0392b','heart'],
+    '\u2B50':['#ffc93c','star'],'\uD83C\uDF1F':['#ffd76a','star'],
+    '\u2728':['#ffe066','star'],'\uD83D\uDCA5':['#ff7a29','star'],
+    '\uD83D\uDCA3':['#3a3f47','bomb'],'\uD83D\uDD25':['#ff5a2a','flame'],
+    '\uD83D\uDC80':['#e8ecf2','skull'],'\uD83D\uDC7B':['#eef2ff','skull'],
+    '\uD83E\uDDDF':['#7ac47a','skull'],'\uD83D\uDC79':['#c0504d','skull'],
+    '\uD83D\uDC1B':['#8bc34a','disc'],'\uD83D\uDD77':['#5d4037','disc'],
+    '\uD83C\uDFF0':['#7d8fa8','tower'],'\uD83D\uDEE1':['#2fb8ff','shield'],
+    '\uD83E\uDDF2':['#e03b3b','disc'],'\uD83D\uDC1F':['#3fa9f5','fish'],
+    '\uD83D\uDC20':['#ff9f43','fish'],'\uD83D\uDC1F\uFE0F':['#3fa9f5','fish'],
+    '\uD83D\uDC8E':['#4dd0e1','gem'],'\uD83D\uDCB0':['#ffc93c','coin'],
+    '\uD83E\uDE99':['#ffb340','coin'],'\uD83D\uDDDD':['#cfd8dc','disc'],
+    '\uD83E\uDDD9':['#a45cff','skull'],'\uD83D\uDEF8':['#9ad3ff','disc'],
+    '\uD83D\uDC1D':['#ffd166','disc'],'\uD83C\uDF4E':['#ff4d4d','disc'],
+    '\u26A0':['#ffb300','warn'],'\uD83C\uDFC6':['#ffc93c','star']
+  };
+
+  function hue(s){
+    var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;
+    return h%360;
+  }
+
+  function shape(g,name,r){
+    g.beginPath();
+    switch(name){
+      case 'heart':
+        g.moveTo(0,r*0.85);
+        g.bezierCurveTo(-r*1.25,r*0.05,-r*0.95,-r*0.85,-r*0.35,-r*0.75);
+        g.bezierCurveTo(-r*0.12,-r*0.7,0,-r*0.45,0,-r*0.45);
+        g.bezierCurveTo(0,-r*0.45,r*0.12,-r*0.7,r*0.35,-r*0.75);
+        g.bezierCurveTo(r*0.95,-r*0.85,r*1.25,r*0.05,0,r*0.85);
+        break;
+      case 'star':
+        for(var i=0;i<10;i++){
+          var a=-Math.PI/2+i*Math.PI/5,rr=(i%2?r*0.44:r);
+          g[i?'lineTo':'moveTo'](Math.cos(a)*rr,Math.sin(a)*rr);
+        }
+        break;
+      case 'shield':
+        g.moveTo(0,-r);g.lineTo(r*0.82,-r*0.6);
+        g.quadraticCurveTo(r*0.82,r*0.55,0,r);
+        g.quadraticCurveTo(-r*0.82,r*0.55,-r*0.82,-r*0.6);
+        break;
+      case 'tower':
+        g.rect(-r*0.7,-r*0.35,r*1.4,r*1.2);
+        g.rect(-r*0.75,-r*0.75,r*0.34,r*0.42);
+        g.rect(-r*0.17,-r*0.9,r*0.34,r*0.55);
+        g.rect(r*0.41,-r*0.75,r*0.34,r*0.42);
+        break;
+      case 'flame':
+        g.moveTo(0,r);
+        g.bezierCurveTo(-r,r*0.35,-r*0.5,-r*0.25,-r*0.2,-r);
+        g.bezierCurveTo(-r*0.05,-r*0.35,r*0.45,-r*0.5,r*0.25,-r*0.05);
+        g.bezierCurveTo(r*0.7,-r*0.3,r,r*0.35,0,r);
+        break;
+      case 'fish':
+        g.moveTo(r,0);
+        g.quadraticCurveTo(r*0.1,-r*0.75,-r*0.45,0);
+        g.quadraticCurveTo(r*0.1,r*0.75,r,0);
+        g.moveTo(-r*0.4,0);g.lineTo(-r,-r*0.5);g.lineTo(-r,r*0.5);
+        break;
+      case 'gem':
+        g.moveTo(0,-r);g.lineTo(r*0.85,-r*0.15);g.lineTo(0,r);
+        g.lineTo(-r*0.85,-r*0.15);
+        break;
+      case 'warn':
+        g.moveTo(0,-r);g.lineTo(r,r*0.8);g.lineTo(-r,r*0.8);
+        break;
+      case 'skull':
+        g.arc(0,-r*0.15,r*0.8,Math.PI,0);
+        g.lineTo(r*0.5,r*0.5);g.lineTo(-r*0.5,r*0.5);
+        break;
+      default:
+        g.arc(0,0,r*0.88,0,6.2832);
+    }
+    g.closePath();
+  }
+
+  var origFill=CTX.prototype.fillText;
+  CTX.prototype.fillText=function(text,x,y,mw){
+    /* вмешиваемся только там, где просили эмодзи-шрифт, и только
+       если устройство их действительно не рисует */
+    if(typeof text==='string'&&text&&
+       this.font&&this.font.indexOf('Emoji')>=0&&!emojiWorks()){
+      var cp=text.codePointAt(0);
+      if(cp>=0x2190){                       /* похоже на пиктограмму */
+        var size=parseFloat(this.font)||20;
+        var key=String.fromCodePoint(cp);
+        var m=MAP[key]||MAP[text]||null;
+        var col=m?m[0]:'hsl('+hue(key)+',72%,58%)';
+        var sh=m?m[1]:'disc';
+        var r=size*0.42;
+        this.save();
+        this.translate(x,y);
+        /* мягкая подложка, чтобы значок читался на любом фоне */
+        this.globalAlpha=(this.globalAlpha||1)*0.9;
+        this.fillStyle=col;
+        shape(this,sh,r);
+        this.fill();
+        this.lineJoin='round';
+        this.lineWidth=Math.max(1,size*0.055);
+        this.strokeStyle='rgba(0,0,0,.45)';
+        this.stroke();
+        this.globalAlpha=(this.globalAlpha||1)*0.55;
+        this.fillStyle='#fff';
+        this.beginPath();
+        this.ellipse(-r*0.3,-r*0.35,r*0.24,r*0.16,-0.6,0,6.2832);
+        this.fill();
+        this.restore();
+        return;
+      }
+    }
+    return origFill.apply(this,arguments);
+  };
+})();
+
 (function(){
 'use strict';
 /* ============================================================
@@ -666,14 +828,12 @@ function joinGroup(){
       toast('💚 Спасибо за подписку!');
     }).catch(function(){
       /* уже подписан либо закрыл окно — просто открываем страницу */
-      bridge.send('VKWebAppOpenApp',{app_id:0}).catch(function(){});
       try{window.open(GROUP_URL,'_blank');}catch(e){}
     });
   }else{
     try{window.open(GROUP_URL,'_blank');}catch(e){toast(GROUP_URL);}
   }
 }
-
 
 /* ---------- поделиться результатом ----------
    Старый метод постинга на стену ВК отключил,
@@ -702,6 +862,7 @@ function share(txt){
   else{try{navigator.clipboard.writeText(t+' '+location.href);toast('📋 Скопировано');}
        catch(e){toast(t);}}
 }
+
 var adBusy=false;
 function watchAd(cb){
   if(adBusy)return;
@@ -1565,7 +1726,7 @@ function drawPath(){
   ctx.beginPath();ctx.arc(b.x,b.y,s*0.62*pulse,0,6.29);ctx.fill();
   ctx.fillStyle='#2f5ea8';
   ctx.beginPath();ctx.arc(b.x,b.y,s*0.36,0,6.29);ctx.fill();
-  ctx.font=(s*0.5)+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla","EmojiOne Color",serif';
+  ctx.font=(s*0.5)+'px serif';
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText('🏰',b.x,b.y);
   ctx.restore();

@@ -65,7 +65,10 @@ body{background:#080b10}
 
 /* ---------- Панель выбранной башни ---------- */
 #selPanel{position:absolute;left:50%;transform:translateX(-50%);
-  bottom:calc(96px + env(safe-area-inset-bottom));z-index:8;display:none;
+  /* над нижней панелью (её высота подставляется через --pb),
+     раньше панель выбранной башни перекрывала ряд башен */
+  bottom:calc(var(--pb, 96px) + 8px + env(safe-area-inset-bottom));
+  z-index:8;display:none;
   background:rgba(18,26,40,.97);border:1px solid rgba(90,140,220,.4);
   border-radius:13px;padding:9px 11px;min-width:212px;max-width:92vw;
   backdrop-filter:blur(4px);box-shadow:0 6px 24px rgba(0,0,0,.5)}
@@ -138,7 +141,7 @@ h2{font-size:clamp(19px,6vw,28px);font-weight:900;color:#e8eef7;letter-spacing:1
 .mp canvas{display:block;margin:0 auto 3px;border-radius:6px}
 .mp b{display:block;font-size:11px;color:#dbe8fb}
 .mp span{display:block;font-size:8.5px;color:#8399b5;margin-top:1px}
-#toast{position:absolute;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));
+#toast{position:absolute;left:50%;bottom:calc(var(--pb, 96px) + 12px + env(safe-area-inset-bottom));
   transform:translateX(-50%);background:rgba(14,20,32,.96);
   border:1px solid rgba(90,140,220,.4);color:#dbe8fb;font-size:12.5px;font-weight:700;
   padding:9px 16px;border-radius:9px;opacity:0;pointer-events:none;z-index:60;
@@ -151,7 +154,7 @@ h2{font-size:clamp(19px,6vw,28px);font-weight:900;color:#e8eef7;letter-spacing:1
   .tw b{font-size:8.5px}
   .tw span{font-size:9px}
   #waveBtn{padding:8px;font-size:13px;margin-top:4px}
-  #selPanel{bottom:calc(84px + env(safe-area-inset-bottom));padding:7px 9px}
+  #selPanel{padding:7px 9px}
   #selStats{font-size:10px;margin-bottom:5px}
   .chip{font-size:12px;padding:3px 7px}
 }
@@ -167,9 +170,13 @@ h2{font-size:clamp(19px,6vw,28px);font-weight:900;color:#e8eef7;letter-spacing:1
   #bottom{padding-top:3px}
 }
 @media(min-width:720px){
-  .tw{width:70px}
-  .tw b{font-size:10.5px}
+  /* Ряд из 8 карточек должен помещаться целиком: при фиксированных
+     70px он шире контейнера, и flex-центрирование обрезает края
+     (первая башня «Пулемёт» уходит за левый край, последняя режется).
+     Карточки растягиваются на всю ширину ряда — обрезка исчезает. */
   #towerRow{justify-content:center}
+  .tw{width:auto;flex:1 1 0;min-width:52px;max-width:70px}
+  .tw b{font-size:10.5px}
 }
 
 /* ===== СОВРЕМЕННЫЙ СЛОЙ ===== */
@@ -473,6 +480,7 @@ h2{letter-spacing:-.5px !important;font-weight:900 !important}
     <div class="sub">Строй башни. Держи <b>30 волн</b>.<br>
       Одна ошибка — и они прорвутся.</div>
     <button class="btn" id="playBtn">В БОЙ</button>
+    <button class="btn ad" id="adBtn">📺 +150 🪙 за рекламу</button>
     <div class="rw">
       <button class="btn sm" id="howBtn">❓ Как играть</button>
       <button class="btn sm" id="statBtn">📊 Профиль</button>
@@ -534,7 +542,29 @@ h2{letter-spacing:-.5px !important;font-weight:900 !important}
   <div id="toast"></div>
 </div>
 
-<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+<script>
+/* ============================================================
+   VK Bridge 3.0.2 — встроен прямо в файл.
+   Раньше библиотека грузилась с unpkg.com внешним БЛОКИРУЮЩИМ
+   скриптом: в WebView (мобильное приложение ВК) недоступный или
+   медленный CDN не давал игре запуститься вовсе (чёрный экран).
+   Теперь мост всегда доступен сразу, без сети.
+   ============================================================ */
+(()=>{"use strict";let e;var t={};let p="u">typeof window,n=!!(p&&window.AndroidBridge),o=!!(p&&window.webkit?.messageHandlers?.VKWebAppClose),r=!!(p&&window.ReactNativeWebView&&"function"==typeof window.ReactNativeWebView.postMessage),i=p&&!n&&!o,a=i&&/(^\?|&)vk_platform=mobile_web(&|$)/.test(location.search),s=i?"message":"VKWebAppEvent",d=["VKWebAppInit","VKWebAppGetCommunityAuthToken","VKWebAppAddToCommunity","VKWebAppAddToHomeScreenInfo","VKWebAppClose","VKWebAppCopyText","VKWebAppCreateHash","VKWebAppGetUserInfo","VKWebAppSetLocation","VKWebAppSendToClient","VKWebAppGetClientVersion","VKWebAppGetPhoneNumber","VKWebAppGetEmail","VKWebAppGetGroupInfo","VKWebAppGetGeodata","VKWebAppGetCommunityToken","VKWebAppGetConfig","VKWebAppGetLaunchParams","VKWebAppSetTitle","VKWebAppGetAuthToken","VKWebAppCallAPIMethod","VKWebAppJoinGroup","VKWebAppLeaveGroup","VKWebAppAllowMessagesFromGroup","VKWebAppDenyNotifications","VKWebAppAllowNotifications","VKWebAppOpenPayForm","VKWebAppOpenApp","VKWebAppShare","VKWebAppShowWallPostBox","VKWebAppScroll","VKWebAppShowOrderBox","VKWebAppShowLeaderBoardBox","VKWebAppShowInviteBox","VKWebAppShowRequestBox","VKWebAppAddToFavorites","VKWebAppShowStoryBox","VKWebAppStorageGet","VKWebAppStorageGetKeys","VKWebAppStorageSet","VKWebAppFlashGetInfo","VKWebAppSubscribeStoryApp","VKWebAppOpenWallPost","VKWebAppCheckAllowedScopes","VKWebAppCheckBannerAd","VKWebAppHideBannerAd","VKWebAppShowBannerAd","VKWebAppCheckNativeAds","VKWebAppShowNativeAds","VKWebAppRetargetingPixel","VKWebAppConversionHit","VKWebAppShowSubscriptionBox","VKWebAppCheckSurvey","VKWebAppShowSurvey","VKWebAppScrollTop","VKWebAppScrollTopStart","VKWebAppScrollTopStop","VKWebAppShowSlidesSheet","VKWebAppTranslate","VKWebAppRecommend","VKWebAppAddToProfile","VKWebAppGetFriends",...i&&!a?["VKWebAppResizeWindow","VKWebAppAddToMenu","VKWebAppShowInstallPushBox","VKWebAppShowCommunityWidgetPreviewBox","VKWebAppCallStart","VKWebAppCallJoin","VKWebAppCallGetStatus"]:["VKWebAppShowImages"]],A=p?window.AndroidBridge:void 0,b=o?window.webkit.messageHandlers:void 0,l=i?parent:void 0,u=function(t){var p;let a,u,W,V,K=[],c=Math.random().toString(36).substring(2,5);function w(e){K.push(e)}function S(e){return n?!!(A&&"function"==typeof A[e]):o?!!(b?.[e]&&"function"==typeof b[e].postMessage):!!i&&d.includes(e)}function f(){return o||n}function h(){return i&&window.parent!==window}function g(){return f()||h()}function v(e){if(o||n)return[...K].map(t=>t.call(null,e));let t=e?.data;if(!i||!t)return;if(r&&"string"==typeof t)try{t=JSON.parse(t)}catch{}let{type:p,data:s,frameId:d}=t;if(p){if("VKWebAppSettings"===p){a=d;return}[...K].map(e=>e({detail:{type:p,data:s}}))}}r&&/(android)/i.test(navigator.userAgent)?document.addEventListener(s,v):"u">typeof window&&"addEventListener"in window&&window.addEventListener(s,v);let y=(p=function(e,p){A?.[e]?A[e](JSON.stringify(p)):b?.[e]&&"function"==typeof b[e].postMessage?b[e].postMessage?.(p):r?window.ReactNativeWebView.postMessage(JSON.stringify({handler:e,params:p})):l&&"function"==typeof l.postMessage&&l.postMessage({handler:e,params:p,type:"vk-connect",webFrameId:a,connectVersion:t},"*")},u={current:0,next(){return++this.current}},W={},V={add(e,t){let p=null!=t?t:`${u.next()}_${c}`;return W[p]=e,p},resolve(e,t,p){let n=W[e];n&&(p(t)?n.resolve(t):n.reject(t),W[e]=null)}},w(e=>{if(e.detail?.data&&"object"==typeof e.detail.data&&"request_id"in e.detail.data){let{request_id:t,...p}=e.detail.data;t&&V.resolve(t,p,e=>!("error_type"in e))}}),function(e,t={}){return new Promise((n,o)=>{let r=V.add({resolve:n,reject:o},t.request_id);p(e,{...t,request_id:r})})});async function m(t){if(n||o)return S(t);if(e)return e.has(t);try{let t=await y("SetSupportedHandlers");e=new Set(t.supportedHandlers)}catch(t){e=new Set(["VKWebAppInit"])}return e.has(t)}return w(t=>{t.detail&&"SetSupportedHandlers"===t.detail.type&&(e=new Set(t.detail.data.supportedHandlers))}),{send:y,sendPromise:y,subscribe:w,unsubscribe:function(e){let t=K.indexOf(e);t>-1&&K.splice(t,1)},supports:function(e){return console.warn("bridge.supports method is deprecated. Use bridge.supportsAsync instead."),S(e)},supportsAsync:m,isWebView:f,isIframe:h,isEmbedded:g,isStandalone:function(){return!g()}}}("3.0.2");window.vkBridge=window.vkConnect=u;var W=window;for(var V in t)W[V]=t[V];t.__esModule&&Object.defineProperty(W,"__esModule",{value:!0})})();
+/* Страховка: если встроенный мост по какой-то причине не подхватился
+   (например, очень старый WebView), пробуем догрузить с CDN
+   асинхронно — это НЕ блокирует запуск игры. */
+(function(){
+  if(typeof window!=='undefined'&&window.vkBridge)return;
+  try{
+    var s=document.createElement('script');
+    s.src='https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js';
+    s.async=true;s.onerror=function(){};
+    document.head.appendChild(s);
+  }catch(e){}
+})();
+</script>
+
 <script>
 /* ============================================================
    ЗАЩИТА ОТ ПРОПАВШИХ ЭМОДЗИ В CANVAS
@@ -863,19 +893,38 @@ function musTick(){
    3. VK
    ============================================================ */
 var VK={ready:false};
+/* Мост мог подгрузиться не сразу (асинхронная загрузка/фолбэк CDN):
+   каждый раз ищем его заново, а не ловим один раз при старте. */
 var bridge=window.vkBridge||null;
+function vkBridgeNow(){return window.vkBridge||window.vkConnect||null;}
 function vkInit(){
-  if(!bridge||!bridge.send)return;
+  if(!VK.ready){
+    bridge=vkBridgeNow();
+    if(!bridge||!bridge.send)return false;   /* ещё не готов — повторим позже */
+  }
   try{
     bridge.send('VKWebAppInit').then(function(){
+      if(VK.ready)return;
       VK.ready=true;
-      bridge.send('VKWebAppGetUserInfo').then(function(u){
+      try{bridge.send('VKWebAppGetUserInfo').then(function(u){
         if(u&&u.first_name)P.name=u.first_name;
-      }).catch(nop);
+      }).catch(nop);}catch(e){}
       cloudLoad();
+      subBridge();
+      checkNativeAds();
+      paintAdBtns();
     }).catch(nop);
   }catch(e){}
+  return true;
 }
+/* Инициализация ВК не должна влиять на запуск игры:
+   пробуем, пока мост не появится (максимум ~12 c). */
+(function(){
+  var tries=0;
+  var t=setInterval(function(){
+    if(vkInit()||++tries>40)clearInterval(t);
+  },300);
+})();
 
 /* ---------- вибрация: пользователь может выключить ----------
    Требование модерации ВК: на мобильных устройствах должна быть
@@ -1004,16 +1053,95 @@ function share(txt){
        catch(e){toast(t);}}
 }
 
+/* ============================================================
+   РЕКЛАМА (монетизация ВК)
+   - rewarded: кнопка «+150 🪙» на стартовом экране и воскрешение
+   - interstitial: между волнами (5,10,15,20,25)
+   - баннер: во время игры (доступен и в веб-версии ВК)
+   Нативные (reward/interstitial) показываются в мобильных клиентах
+   ВК (Android/iOS); на вебе и вне ВК награда выдаётся сразу.
+   ============================================================ */
 var adBusy=false;
+var nativeAdsOK=true;   /* уточняется через supportsAsync */
+var bannerShown=false;
+function checkNativeAds(){
+  var b=vkBridgeNow();
+  if(!b||!b.supportsAsync){return;}
+  try{
+    Promise.resolve(b.supportsAsync('VKWebAppShowNativeAds')).then(function(ok){
+      nativeAdsOK=!!ok;
+    }).catch(function(){nativeAdsOK=true;});
+  }catch(e){nativeAdsOK=true;}
+}
+/* rewarded-реклама: награда после просмотра */
 function watchAd(cb){
   if(adBusy)return;
-  if(!VK.ready){cb(true);return;}
+  /* вне мобильного клиента ВК нативная реклама недоступна —
+     награду выдаём сразу, чтобы функция не ломалась на вебе */
+  if(!VK.ready||!nativeAdsOK){
+    toast('✨ Бонус выдан');
+    setTimeout(function(){cb(true);},250);
+    return;
+  }
   adBusy=true;toast('📺 Загружаем ролик…');
   bridge.send('VKWebAppShowNativeAds',{ad_format:'reward'}).then(function(d){
     adBusy=false;
-    if(d&&d.result)cb(true);
-    else{sfx('err');toast('Реклама недоступна');}
-  }).catch(function(){adBusy=false;sfx('err');toast('Реклама недоступна');});
+    if(d&&d.result){toast('📺 Спасибо за просмотр!');cb(true);}
+    else{sfx('err');toast('Реклама сейчас недоступна, попробуйте позже');}
+  }).catch(function(){adBusy=false;sfx('err');toast('Реклама сейчас недоступна');});
+}
+/* interstitial между волнами — только в мобильных клиентах ВК */
+function interstitialAd(){
+  if(!VK.ready||!nativeAdsOK||adBusy)return;
+  var b=vkBridgeNow();if(!b)return;
+  try{
+    b.send('VKWebAppShowNativeAds',{ad_format:'interstitial'}).catch(nop);
+  }catch(e){}
+}
+/* баннер: показываем во время игры, прячем в меню */
+function showBanner(){
+  if(!VK.ready||bannerShown)return;
+  var b=vkBridgeNow();if(!b||!b.send)return;
+  try{
+    b.send('VKWebAppCheckBannerAd').then(function(d){
+      if(!(d&&d.result))return null;
+      return b.send('VKWebAppShowBannerAd',{
+        banner_location:'bottom',layout_type:'resize',height_type:'compact'
+      });
+    }).then(function(){bannerShown=true;}).catch(nop);
+  }catch(e){}
+}
+function hideBanner(){
+  if(!bannerShown)return;
+  bannerShown=false;
+  var b=vkBridgeNow();if(!b)return;
+  try{b.send('VKWebAppHideBannerAd').catch(nop);}catch(e){}
+}
+/* подписка на события моста (баннер изменил размер и т.п.) */
+function subBridge(){
+  var b=vkBridgeNow();if(!b||!b.subscribe)return;
+  try{b.subscribe(function(e){
+    if(!e)return;
+    if(e.type==='VKWebAppBannerAdUpdated'){
+      setTimeout(function(){resize();updateLayout();},60);
+    }
+  });}catch(e){}
+}
+/* кнопка «+150 🪙 за рекламу» на стартовом экране */
+var AD_GOLD=150;
+function paintAdBtns(){
+  var b=$('adBtn');if(!b)return;
+  var have=P.bonusGold||0;
+  b.innerHTML='📺 '+(have?'Ещё +'+AD_GOLD+' 🪙':'+'+AD_GOLD+' 🪙 за рекламу');
+}
+function adReward(){
+  sfx('click');
+  watchAd(function(ok){
+    if(!ok){sfx('err');return;}
+    P.bonusGold=(P.bonusGold||0)+AD_GOLD;
+    save();paintAdBtns();
+    sfx('coin');toast('✨ +'+AD_GOLD+' 🪙 к стартовому золоту!');
+  });
 }
 
 /* ============================================================
@@ -1021,7 +1149,7 @@ function watchAd(cb){
    ============================================================ */
 var SAVE='oborona_v1';
 var P={name:'Командир',bestWave:0,wins:0,runs:0,totalKills:0,totalGold:0,
-  snd:true,map:0,maps:{m0:1},seenIntro:0,revives:0,bestMap:{}};
+  snd:true,map:0,maps:{m0:1},seenIntro:0,revives:0,bestMap:{},bonusGold:0};
 function save(){
   try{localStorage.setItem(SAVE,JSON.stringify(P));}catch(e){}
   if(VK.ready)bridge.send('VKWebAppStorageSet',
@@ -1030,7 +1158,7 @@ function save(){
 function mergeSave(o){
   if(!o||typeof o!=='object')return;
   ['name','bestWave','wins','runs','totalKills','totalGold','map',
-   'seenIntro','revives'].forEach(function(k){
+   'seenIntro','revives','bonusGold'].forEach(function(k){
     if(typeof o[k]==='number'&&isFinite(o[k]))P[k]=o[k];
     else if(typeof o[k]==='string')P[k]=o[k];
   });
@@ -1316,6 +1444,7 @@ function startRun(){
   resize();
   void cv.offsetHeight;
   resize();
+  updateLayout();
   layout();buildPath();
   /* Ещё один пересчёт в следующем кадре: в некоторых браузерах
      (и в тестовой среде) высота панелей становится известна
@@ -1328,7 +1457,9 @@ function startRun(){
     }
   });
   G.towers=[];G.mobs=[];G.shots=[];G.fx=[];G.dmgTxt=[];
-  G.gold=G.map.gold;G.lives=G.map.lives;
+  G.gold=G.map.gold+(P.bonusGold||0);
+  P.bonusGold=0;
+  G.lives=G.map.lives;
   G.wave=0;G.spawnQ=[];G.spawnT=0;
   G.sel=null;G.build=null;G.hover=null;
   G.speed=1;G.kills=0;G.goldEarned=0;G.leaked=0;
@@ -1336,6 +1467,7 @@ function startRun(){
   P.runs++;save();
   paintHud();paintTowerRow();paintWaveBtn();hideSel();
   musStart();MUS.battle=0;
+  showBanner();
   msg('ВОЛНА 1 ИЗ '+TOTAL_WAVES);
 }
 
@@ -1706,6 +1838,8 @@ function updateSpawn(dt){
     G.state='build';
     MUS.battle=0;
     sfx('clear');
+    /* реклама между волнами: каждая 5-я отбитая волна */
+    if(G.wave>=5&&G.wave%5===0)interstitialAd();
     paintHud();paintWaveBtn();
     if(G.wave>=TOTAL_WAVES){endRun(true);return;}
     msg('✅ ВОЛНА ОТБИТА +'+bonus);
@@ -1743,6 +1877,7 @@ var cv=$('cv'),ctx=cv.getContext('2d',{alpha:false});
 var VW=0,VH=0,DPR=1;
 
 function resize(){
+  updateLayout();
   /* Берём РЕАЛЬНЫЙ прямоугольник холста.
      Раньше использовалась вычисленная высота, но пока панели
      скрыты (на экране меню) расчёт давал завышенное значение,
@@ -1769,7 +1904,7 @@ function rebuildPositions(){
     t.x=cx(t.c);t.y=cy(t.r);
   }
 }
-window.addEventListener('resize',function(){setTimeout(resize,80);});
+window.addEventListener('resize',function(){setTimeout(function(){resize();},80);});
 window.addEventListener('orientationchange',function(){setTimeout(resize,250);});
 
 function render(){
@@ -2422,6 +2557,13 @@ $('pauseBtn').addEventListener('pointerdown',function(e){
 /* ============================================================
    15. ЭКРАНЫ
    ============================================================ */
+function updateLayout(){
+  /* Высота нижней панели меняется (медиазапросы, баннер):
+     selPanel и toast позиционируются над ней через CSS-переменную. */
+  var b=document.getElementById('bottom');
+  var h=b?b.offsetHeight:0;
+  try{document.documentElement.style.setProperty('--pb',h+'px');}catch(e){}
+}
 function showScr(id){
   ['intro','mapScr','howScr','pauseScr','endScr','statScr']
     .forEach(function(s){$(s).classList.toggle('on',s===id);});
@@ -2429,7 +2571,9 @@ function showScr(id){
   $('top').style.display=inGame?'':'none';
   $('bottom').style.display=inGame?'':'none';
   cv.style.display=inGame?'':'none';
-  if(!inGame)hideSel();
+  if(!inGame){hideSel();hideBanner();}
+  updateLayout();
+  if(!inGame)paintAdBtns();
 }
 function pauseGame(){
   if(G.state!=='build'&&G.state!=='wave')return;
@@ -2526,7 +2670,7 @@ function doRevive(){
   paintHud();paintWaveBtn();
 }
 function quitToMenu(){
-  G.state='menu';musStop();
+  G.state='menu';musStop();hideBanner();
   paintMeta();showScr('intro');
 }
 
@@ -2618,6 +2762,7 @@ bindTap('mapBack',function(){sfx('click');paintMeta();showScr('intro');});
 bindTap('howBtn',function(){sfx('click');showScr('howScr');});
 bindTap('howClose',function(){sfx('click');showScr('intro');});
 bindTap('statBtn',function(){sfx('click');openStats();});
+bindTap('adBtn',function(){adReward();});
 bindTap('stClose',function(){sfx('click');paintMeta();showScr('intro');});
 bindTap('stShare',function(){sfx('click');share();});
 bindTap('stLb',function(){sfx('click');joinGroup();});
@@ -2660,6 +2805,18 @@ var hudAcc=0;
 /* ============================================================
    17. СТАРТ
    ============================================================ */
+function safeBoot(){
+  try{boot();}
+  catch(e){
+    /* даже если что-то сломалось при старте — показываем меню,
+       чтобы игра гарантированно запускалась на любом устройстве */
+    try{
+      var sc=document.querySelector('.scr.on');
+      if(!sc)document.getElementById('intro').classList.add('on');
+      requestAnimationFrame(loop);
+    }catch(e2){}
+  }
+}
 function boot(){
   localLoad();
   $('howCard').innerHTML=
@@ -2668,7 +2825,8 @@ function boot(){
     '❤️ Прорвался враг — минус жизнь. Кончатся — конец<br>'+
     '🪙 За убитых дают золото. Трать на новые башни<br>'+
     '⬆️ Тапни свою башню — можно <b>улучшить</b> или продать<br>'+
-    '⏩ Кнопка <b>×2 / ×3</b> ускоряет время<br><br>'+
+    '⏩ Кнопка <b>×2 / ×3</b> ускоряет время<br>'+
+    '📺 Реклама даёт бонусы: стартовое золото и воскрешение<br><br>'+
     '<b>Важно:</b> 💣 Пушка не бьёт по воздуху — держи ❄️ и 🔫 против летунов. '+
     '📡 Штаб усиливает соседние башни, ставь его в центр обороны.';
   paintMeta();
@@ -2695,7 +2853,7 @@ window.__T={G:G,P:P,TOWERS:TOWERS,TMAP:TMAP,MOBS:MOBS,WAVES:WAVES,MAPS:MAPS,
   A:A,get VW(){return VW;},get VH(){return VH;},
   setState:function(s){G.state=s;},boot:boot};
 
-boot();
+safeBoot();
 
 /* Экспорт для автопроверки требований модерации (не влияет на игру) */
 try{window.__MOD={
